@@ -26,6 +26,7 @@ void Copter::init_ardupilot()
 
     // initialise battery monitor
     battery.init();
+thrust_sensor.init(hal.serial(2)); // SERIAL2
 
 #if AP_RSSI_ENABLED
     // Init RSSI

@@ -1,0 +1,7 @@
+cat > libraries/AP_ThrustSensor/wscript << 'EOF'
+#!/usr/bin/env python
+def build(bld):
+    bld.ap_library(
+        library='AP_ThrustSensor',
+        vehicle='Copter',
+    )

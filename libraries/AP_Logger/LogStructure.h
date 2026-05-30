@@ -133,6 +133,7 @@ const struct MultiplierStructure log_Multipliers[] = {
 #include <AP_NavEKF/LogStructure.h>
 #include <AP_BattMonitor/LogStructure.h>
 #include <AP_InertialSensor/LogStructure.h>
+#include <AP_InertialSensor/LogStructure.h>//5.22
 #include <AP_AHRS/LogStructure.h>
 #include <AP_Camera/LogStructure.h>
 #include <AP_Mount/LogStructure.h>
@@ -152,7 +153,7 @@ const struct MultiplierStructure log_Multipliers[] = {
 #include <AP_HAL/LogStructure.h>
 #include <AP_Mission/LogStructure.h>
 #include <AP_Servo_Telem/LogStructure.h>
-
+#include <AP_ThrustSensor/LogStructure.h>//5.22
 #include <AP_RTC/AP_RTC_config.h>
 
 // structure used to define logging format
@@ -1359,6 +1360,7 @@ enum LogMessages : uint8_t {
     LOG_UNIT_MSG,
     LOG_MULT_MSG,
     LOG_RALLY_MSG,
+    LOG_THST_MSG,
 #if AP_RTC_LOGGING_ENABLED
     LOG_RTC_MSG,
 #endif  // AP_RTC_LOGGING_ENABLED

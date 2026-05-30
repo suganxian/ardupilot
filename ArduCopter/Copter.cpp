@@ -659,6 +659,39 @@ void Copter::loop_rate_logging()
 // should be run at 10hz
 void Copter::ten_hz_logging_loop()
 {
+    thrust_sensor.update();
+    thrust_sensor.log_write();//5.22
+
+    static uint32_t last_thr_stream_ms = 0;
+    const uint32_t now_ms = AP_HAL::millis();
+    if (now_ms - last_thr_stream_ms >= 200) { // 5Hz
+        last_thr_stream_ms = now_ms;
+
+        mavlink_named_value_float_t nv{};
+        nv.time_boot_ms = now_ms;
+
+        strncpy(nv.name, "THR_KG", sizeof(nv.name));
+        nv.value = thrust_sensor.weight();
+        gcs().send_to_active_channels(MAVLINK_MSG_ID_NAMED_VALUE_FLOAT, (const char *)&nv);
+
+        memset(&nv, 0, sizeof(nv));
+        nv.time_boot_ms = now_ms;
+        strncpy(nv.name, "THR_N", sizeof(nv.name));
+        nv.value = thrust_sensor.weight_newton();
+        gcs().send_to_active_channels(MAVLINK_MSG_ID_NAMED_VALUE_FLOAT, (const char *)&nv);
+
+        memset(&nv, 0, sizeof(nv));
+        nv.time_boot_ms = now_ms;
+        strncpy(nv.name, "THR_STB", sizeof(nv.name));
+        nv.value = thrust_sensor.stable() ? 1.0f : 0.0f;
+        gcs().send_to_active_channels(MAVLINK_MSG_ID_NAMED_VALUE_FLOAT, (const char *)&nv);
+        
+        gcs().send_text(MAV_SEVERITY_INFO, "THR kg=%.2f N=%.1f s=%u",
+                (double)thrust_sensor.weight(),
+                (double)thrust_sensor.weight_newton(),
+                (unsigned)thrust_sensor.stable());//消息窗口提示（测试）
+
+    }
     // always write AHRS attitude at 10Hz
     ahrs.Write_Attitude(attitude_control->get_att_target_euler_rad() * RAD_TO_DEG);
     // log attitude controller data if we're not already logging at the higher rate

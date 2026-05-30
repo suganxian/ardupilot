@@ -24,7 +24,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdarg.h>
-
+#include <AP_ThrustSensor/AP_ThrustSensor.h>
 #include <AP_HAL/AP_HAL.h>
 
 // Common dependencies
@@ -303,7 +303,7 @@ private:
 
     // Arming/Disarming management class
     AP_Arming_Copter arming;
-
+AP_ThrustSensor thrust_sensor;
     // Optical flow sensor
 #if AP_OPTICALFLOW_ENABLED
     AP_OpticalFlow optflow;
@@ -900,6 +900,7 @@ private:
     uint8_t get_num_log_structures() const override;
 
     // Log.cpp
+    void Log_Write_THST();//THST声明
     void Log_Write_Control_Tuning();
     void Log_Write_Attitude();
     void Log_Write_Rate();
