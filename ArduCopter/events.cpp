@@ -1,5 +1,11 @@
 #include "Copter.h"
 
+// Temporary bench-only build switch for no-prop motor/CH3 output testing.
+// Keep in sync with AP_Arming_Copter.cpp and set to 0 before flight builds.
+#ifndef CORVON_BENCH_MOTOR_OUTPUT_TEST
+#define CORVON_BENCH_MOTOR_OUTPUT_TEST 1
+#endif
+
 /*
  *       This event will be called when the failsafe changes
  *       boolean failsafe reflects the current state
@@ -98,6 +104,11 @@ void Copter::announce_failsafe(const char *type, const char *action_undertaken)
 
 void Copter::handle_battery_failsafe(const char *type_str, const int8_t action)
 {
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    LOGGER_WRITE_ERROR(LogErrorSubsystem::FAILSAFE_BATT, LogErrorCode::FAILSAFE_OCCURRED);
+    return;
+#endif
+
     LOGGER_WRITE_ERROR(LogErrorSubsystem::FAILSAFE_BATT, LogErrorCode::FAILSAFE_OCCURRED);
 
     FailsafeAction desired_action = (FailsafeAction)action;
@@ -461,6 +472,10 @@ void Copter::set_mode_brake_or_land_with_pause(ModeReason reason)
 }
 
 bool Copter::should_disarm_on_failsafe() {
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    return false;
+#endif
+
     if (ap.in_arming_delay) {
         return true;
     }
@@ -483,6 +498,9 @@ bool Copter::should_disarm_on_failsafe() {
 
 
 void Copter::do_failsafe_action(FailsafeAction action, ModeReason reason){
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    return;
+#endif
 
     // Execute the specified desired_action
     switch (action) {
@@ -522,4 +540,3 @@ void Copter::do_failsafe_action(FailsafeAction action, ModeReason reason){
     }
 #endif
 }
-

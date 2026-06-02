@@ -5,6 +5,12 @@
 #pragma GCC diagnostic ignored "-Wbitwise-instead-of-logical"
 #endif
 
+// Temporary bench-only build switch for no-prop motor/CH3 output testing.
+// Set to 0 before any flight-capable firmware is built.
+#ifndef CORVON_BENCH_MOTOR_OUTPUT_TEST
+#define CORVON_BENCH_MOTOR_OUTPUT_TEST 1
+#endif
+
 bool AP_Arming_Copter::pre_arm_checks(bool display_failure)
 {
     const bool passed = run_pre_arm_checks(display_failure);
@@ -25,6 +31,10 @@ bool AP_Arming_Copter::run_pre_arm_checks(bool display_failure)
         check_failed(display_failure, "System not initialised");
         return false;
     }
+
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    return true;
+#endif
 
     // check if motor interlock and either Emergency Stop aux switches are used
     // at the same time.  This cannot be allowed.
@@ -443,6 +453,10 @@ bool AP_Arming_Copter::proximity_checks(bool display_failure) const
 // performs mandatory position checks.  returns true if passed
 bool AP_Arming_Copter::mandatory_position_checks(bool display_failure)
 {
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    return true;
+#endif
+
     // check if flight mode requires position
     bool mode_requires_position = copter.flightmode->requires_position();
 
@@ -564,6 +578,10 @@ bool AP_Arming_Copter::alt_checks(bool display_failure)
 //  has side-effect that logging is started
 bool AP_Arming_Copter::arm_checks(AP_Arming::Method method)
 {
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    return true;
+#endif
+
     const auto &ahrs = AP::ahrs();
 
     // always check if inertial nav has started and is ready
@@ -757,6 +775,13 @@ bool AP_Arming_Copter::arm(const AP_Arming::Method method, const bool do_arming_
     // finally actually arm the motors
     copter.motors->armed(true);
 
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    // Keep bench output tests from being interrupted by link/GPS/EKF failsafes.
+    copter.g.failsafe_throttle.set(Copter::FS_THR_Action::DISABLED);
+    copter.g.failsafe_gcs.set(Copter::FS_GCS_Action::DISABLED);
+    copter.g.fs_ekf_action.set(Copter::FS_EKF_Action::REPORT_ONLY);
+#endif
+
 #if HAL_LOGGING_ENABLED
     // log flight mode in case it was changed while vehicle was disarmed
     AP::logger().Write_Mode((uint8_t)copter.flightmode->mode_number(), copter.control_mode_reason);
@@ -791,6 +816,17 @@ bool AP_Arming_Copter::disarm(const AP_Arming::Method method, bool do_disarm_che
     if (!copter.motors->armed()) {
         return true;
     }
+
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    const bool user_requested_disarm =
+        method == AP_Arming::Method::RUDDER ||
+        method == AP_Arming::Method::MAVLINK ||
+        method == AP_Arming::Method::AUXSWITCH ||
+        method == AP_Arming::Method::SCRIPTING;
+    if (!user_requested_disarm) {
+        return false;
+    }
+#endif
 
     // do not allow disarm via mavlink if we think we are flying:
     if (do_disarm_checks &&

@@ -1,6 +1,12 @@
 #include "Copter.h"
 #include <AP_ESC_Telem/AP_ESC_Telem.h>
 
+// Temporary bench-only build switch for no-prop motor/CH3 output testing.
+// Set to 0 before any flight-capable firmware is built.
+#ifndef CORVON_BENCH_MOTOR_OUTPUT_TEST
+#define CORVON_BENCH_MOTOR_OUTPUT_TEST 1
+#endif
+
 /*****************************************************************************
 *   The init_ardupilot function processes everything we need for an in - air restart
 *        We will determine later if we are actually on the ground and process a
@@ -318,6 +324,15 @@ bool Copter::ekf_alt_ok() const
 // update_auto_armed - update status of auto_armed flag
 void Copter::update_auto_armed()
 {
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    set_auto_armed(motors->armed());
+    if (motors->armed()) {
+        set_land_complete(false);
+        set_land_complete_maybe(false);
+    }
+    return;
+#endif
+
     // disarm checks
     if(ap.auto_armed){
         // if motors are disarmed, auto_armed should also be false

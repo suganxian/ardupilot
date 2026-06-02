@@ -900,6 +900,22 @@ int32_t AP_BattMonitor::pack_capacity_mah(uint8_t instance) const
 
 void AP_BattMonitor::check_failsafes(void)
 {
+#ifndef CORVON_BENCH_MOTOR_OUTPUT_TEST
+#define CORVON_BENCH_MOTOR_OUTPUT_TEST 1
+#endif
+
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    _highest_failsafe_priority = INT8_MAX;
+    _has_triggered_failsafe = false;
+#ifndef HAL_BUILD_AP_PERIPH
+    AP_Notify::flags.failsafe_battery = false;
+#endif
+    for (uint8_t i = 0; i < _num_instances; i++) {
+        state[i].failsafe = Failsafe::None;
+    }
+    return;
+#endif
+
     if (hal.util->get_soft_armed()) {
         for (uint8_t i = 0; i < _num_instances; i++) {
             if (drivers[i] == nullptr) {

@@ -1,5 +1,11 @@
 #include "Copter.h"
 
+// Temporary bench-only build switch for no-prop motor/CH3 output testing.
+// Set to 0 before any flight-capable firmware is built.
+#ifndef CORVON_BENCH_MOTOR_OUTPUT_TEST
+#define CORVON_BENCH_MOTOR_OUTPUT_TEST 1
+#endif
+
 /*
  * Init and run calls for stabilize flight mode
  */
@@ -20,6 +26,11 @@ void ModeStabilize::run()
 
     // Determine desired spool state based on pilot throttle input.
     // The setter enforces that disarmed aircraft are held at SHUT_DOWN until armed.
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    if (motors->armed()) {
+        motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
+    } else
+#endif
     if (copter.ap.throttle_zero) {
         motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::GROUND_IDLE);
     } else {

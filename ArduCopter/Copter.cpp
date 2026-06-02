@@ -83,6 +83,11 @@
 
 const AP_HAL::HAL& hal = AP_HAL::get_HAL();
 
+// Bench-only support for no-prop thrust sensor and motor-output testing.
+#ifndef CORVON_BENCH_MOTOR_OUTPUT_TEST
+#define CORVON_BENCH_MOTOR_OUTPUT_TEST 1
+#endif
+
 #define SCHED_TASK(func, rate_hz, _max_time_micros, _prio) SCHED_TASK_CLASS(Copter, &copter, func, rate_hz, _max_time_micros, _prio)
 #define FAST_TASK(func) FAST_TASK_CLASS(Copter, &copter, func)
 
@@ -691,6 +696,18 @@ void Copter::ten_hz_logging_loop()
                 (double)thrust_sensor.weight_newton(),
                 (unsigned)thrust_sensor.stable());//消息窗口提示（测试）
 
+#if CORVON_BENCH_MOTOR_OUTPUT_TEST
+        if (!motors->initialised_ok()) {
+            AP_MotorsMatrix *motors_matrix = AP_MotorsMatrix::get_singleton();
+            if (motors_matrix != nullptr) {
+                motors_matrix->init(AP_Motors::MOTOR_FRAME_QUAD, AP_Motors::MOTOR_FRAME_TYPE_X);
+            }
+        }
+
+        for (uint8_t i = 0; i < 4; i++) {
+            SRV_Channels::set_aux_channel_default(SRV_Channels::get_motor_function(i), i);
+        }
+#endif
     }
     // always write AHRS attitude at 10Hz
     ahrs.Write_Attitude(attitude_control->get_att_target_euler_rad() * RAD_TO_DEG);
