@@ -26,11 +26,6 @@ void ModeStabilize::run()
 
     // Determine desired spool state based on pilot throttle input.
     // The setter enforces that disarmed aircraft are held at SHUT_DOWN until armed.
-#if CORVON_BENCH_MOTOR_OUTPUT_TEST
-    if (motors->armed()) {
-        motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
-    } else
-#endif
     if (copter.ap.throttle_zero) {
         motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::GROUND_IDLE);
     } else {

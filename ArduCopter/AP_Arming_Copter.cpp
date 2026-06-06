@@ -33,6 +33,19 @@ bool AP_Arming_Copter::run_pre_arm_checks(bool display_failure)
     }
 
 #if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    if (!rc().has_valid_input()) {
+        check_failed(display_failure, "BENCH: RC input required");
+        return false;
+    }
+    if (copter.channel_throttle == nullptr) {
+        check_failed(display_failure, "BENCH: no throttle channel");
+        return false;
+    }
+    const int16_t throttle_in = copter.channel_throttle->get_radio_in();
+    if (throttle_in <= 0 || throttle_in > 1100) {
+        check_failed(display_failure, "BENCH: throttle not low");
+        return false;
+    }
     return true;
 #endif
 
@@ -579,6 +592,19 @@ bool AP_Arming_Copter::alt_checks(bool display_failure)
 bool AP_Arming_Copter::arm_checks(AP_Arming::Method method)
 {
 #if CORVON_BENCH_MOTOR_OUTPUT_TEST
+    if (!rc().has_valid_input()) {
+        check_failed(true, "BENCH: RC input required");
+        return false;
+    }
+    if (copter.channel_throttle == nullptr) {
+        check_failed(true, "BENCH: no throttle channel");
+        return false;
+    }
+    const int16_t throttle_in = copter.channel_throttle->get_radio_in();
+    if (throttle_in <= 0 || throttle_in > 1100) {
+        check_failed(true, "BENCH: throttle not low");
+        return false;
+    }
     return true;
 #endif
 

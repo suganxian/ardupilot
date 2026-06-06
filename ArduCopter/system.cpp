@@ -324,15 +324,6 @@ bool Copter::ekf_alt_ok() const
 // update_auto_armed - update status of auto_armed flag
 void Copter::update_auto_armed()
 {
-#if CORVON_BENCH_MOTOR_OUTPUT_TEST
-    set_auto_armed(motors->armed());
-    if (motors->armed()) {
-        set_land_complete(false);
-        set_land_complete_maybe(false);
-    }
-    return;
-#endif
-
     // disarm checks
     if(ap.auto_armed){
         // if motors are disarmed, auto_armed should also be false
